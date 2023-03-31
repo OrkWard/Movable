@@ -9,7 +9,26 @@ main();
 function main() {
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
-  const gl = canvas.getContext("webgl");
+  function validateNoneOfTheArgsAreUndefined(functionName, args) {
+    for (var ii = 0; ii < args.length; ++ii) {
+      if (args[ii] === undefined) {
+        console.error(
+          "undefined passed to gl." +
+            functionName +
+            "(" +
+            WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
+            ")"
+        );
+      }
+    }
+  }
+
+  let gl = canvas.getContext("webgl");
+  gl = WebGLDebugUtils.makeDebugContext(
+    gl,
+    undefined,
+    validateNoneOfTheArgsAreUndefined
+  );
 
   // Only continue if WebGL is available and working
   if (gl === null) {
@@ -28,17 +47,23 @@ function main() {
 
   const vsSource = `
     attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
+    varying lowp vec4 vColor;
+
     void main() {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vColor = aVertexColor;
     }
   `;
   const fsSource = `
+    varying lowp vec4 vColor;
+
     void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      gl_FragColor = vColor;
     }
   `;
 
@@ -47,6 +72,7 @@ function main() {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(
