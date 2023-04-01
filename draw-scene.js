@@ -1,6 +1,6 @@
 let squareRotation = 0.0;
 
-function drawScene(gl, programInfo, buffers, deltaTime) {
+function drawScene(gl, programInfo, buffers, texture, deltaTime) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
   gl.clearDepth(1.0); // Clear everything
   gl.enable(gl.DEPTH_TEST); // Enable depth testing
@@ -39,11 +39,15 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
     modelViewMatrix
   );
 
+  // bind texture
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.uniform1i(programInfo.uniformLocations.tex, 0);
+
   // const offset = 0;
   // const vertexCount = 4;
   // gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
-  // setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
 }
 

@@ -1,12 +1,14 @@
 function initBuffers(gl, programInfo) {
   const positionBuffer = initPositionBuffer(gl, programInfo);
-  const colorBuffer = initColorBuffer(gl, programInfo);
+  // const colorBuffer = initColorBuffer(gl, programInfo);
   const indexBuffer = initIndexBuffer(gl);
+  const texCoordBuffer = initTexCoordBuffer(gl, programInfo);
 
   return {
     position: positionBuffer,
-    color: colorBuffer,
-    index: indexBuffer
+    // color: colorBuffer,
+    index: indexBuffer,
+    texCoord: texCoordBuffer,
   };
 }
 
@@ -14,19 +16,14 @@ function initPositionBuffer(gl, programInfo) {
   const vertices = [
     // Front face
     -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
-
     // Back face
     -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0,
-
     // Top face
     -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
-
     // Bottom face
     -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0,
-
     // Right face
     1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-
     // Left face
     -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0,
   ];
@@ -35,12 +32,12 @@ function initPositionBuffer(gl, programInfo) {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-  const numComponents = 3; // pull out 2 values per iteration
-  const type = gl.FLOAT; // the data in the buffer is 32bit floats
-  const normalize = false; // don't normalize
-  const stride = 0; // how many bytes to get from one set of values to the next
-  // 0 = use type and numComponents above
-  const offset = 0; // how many bytes inside the buffer to start from
+  const numComponents = 3;
+  const type = gl.FLOAT;
+  const normalize = false;
+  const stride = 0;
+  const offset = 0;
+  gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
   gl.vertexAttribPointer(
     programInfo.attribLocations.vertexPosition,
     numComponents,
@@ -49,7 +46,6 @@ function initPositionBuffer(gl, programInfo) {
     stride,
     offset
   );
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
 
   return positionBuffer;
 }
@@ -76,13 +72,18 @@ function initColorBuffer(gl, programInfo) {
 
   const colorBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(generatedColors), gl.STATIC_DRAW);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(generatedColors),
+    gl.STATIC_DRAW
+  );
 
   const numComponents = 4;
   const type = gl.FLOAT;
   const normalize = false;
   const stride = 0;
   const offset = 0;
+  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
   gl.vertexAttribPointer(
     programInfo.attribLocations.vertexColor,
     numComponents,
@@ -91,7 +92,6 @@ function initColorBuffer(gl, programInfo) {
     stride,
     offset
   );
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
 
   return colorBuffer;
 }
@@ -100,17 +100,19 @@ function initIndexBuffer(gl) {
   var indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-  // This array defines each face as two triangles, using the
-  // indices into the vertex array to specify each triangle's
-  // position.
-
   var cubeVertexIndices = [
-    0, 1, 2, 0, 2, 3, // front
-    4, 5, 6, 4, 6, 7, // back
-    8, 9, 10, 8, 10, 11, // top
-    12, 13, 14, 12, 14, 15, // bottom
-    16, 17, 18, 16, 18, 19, // right
-    20, 21, 22, 20, 22, 23, // left
+    // front
+    0, 1, 2, 0, 2, 3,
+    // back
+    4, 5, 6, 4, 6, 7,
+    // top
+    8, 9, 10, 8, 10, 11,
+    // bottom
+    12, 13, 14, 12, 14, 15,
+    // right
+    16, 17, 18, 16, 18, 19,
+    // left
+    20, 21, 22, 20, 22, 23,
   ];
 
   // Now send the element array to GL
@@ -122,6 +124,34 @@ function initIndexBuffer(gl) {
   );
 
   return indexBuffer;
+}
+
+function initTexCoordBuffer(gl, programInfo) {
+  const texCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+
+  const texCoords = [
+    // Front
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+    // Back
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+    // Top
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+    // Bottom
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+    // Right
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+    // Left
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+  ];
+
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(texCoords),
+    gl.STATIC_DRAW
+  );
+  gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
+  gl.vertexAttribPointer(programInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
 }
 
 export { initBuffers };

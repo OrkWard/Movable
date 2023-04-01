@@ -1,5 +1,6 @@
 import { initBuffers } from "./init-buffers.js";
 import { drawScene } from "./draw-scene.js";
+import { initTextures } from "./init-texture.js";
 
 main();
 
@@ -36,27 +37,8 @@ function main() {
   }
 
   // Vertex shader program
-  const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    varying lowp vec4 vColor;
-
-    void main() {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
-    }
-  `;
-  const fsSource = `
-    varying lowp vec4 vColor;
-
-    void main() {
-      gl_FragColor = vColor;
-    }
-  `;
+  const vsSource = document.querySelector('#shader-vs').text;
+  const fsSource = document.querySelector('#shader-fs').text;
 
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
   const programInfo = {
@@ -64,6 +46,7 @@ function main() {
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
       vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+      texCoord: gl.getAttribLocation(shaderProgram, "aTexCoord"),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(
@@ -71,12 +54,12 @@ function main() {
         "uProjectionMatrix"
       ),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      tex: gl.getUniformLocation(shaderProgram, "tex"),
     },
   };
 
-  // Here's where we call the routine that builds all the
-  // objects we'll be drawing.
   const buffers = initBuffers(gl, programInfo);
+  const texture = initTextures(gl);
 
   let then = 0;
 
@@ -86,7 +69,7 @@ function main() {
     const deltaTime = now - then;
     then = now;
 
-    drawScene(gl, programInfo, buffers, deltaTime);
+    drawScene(gl, programInfo, buffers, texture, deltaTime);
 
     requestAnimationFrame(render);
   }
