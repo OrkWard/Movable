@@ -37,8 +37,21 @@ function main() {
   }
 
   // Vertex shader program
-  const vsSource = document.querySelector('#shader-vs').text;
-  const fsSource = document.querySelector('#shader-fs').text;
+  let vsSource, fsSource;
+  let xhr = new XMLHttpRequest();
+  xhr.open("GET", "cube.vert", false);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      vsSource = xhr.responseText;
+    }
+  };
+  xhr.send();
+  xhr = new XMLHttpRequest();
+  xhr.open('GET', 'cube.frag', false);
+  xhr.onreadystatechange = function () {
+    fsSource = xhr.responseText;
+  }
+  xhr.send();
 
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
   const programInfo = {
@@ -65,7 +78,7 @@ function main() {
 
   // Draw the scene repeatedly
   function render(now) {
-    now *= 0.001;  // convert to seconds
+    now *= 0.001; // convert to seconds
     const deltaTime = now - then;
     then = now;
 
