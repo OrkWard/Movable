@@ -76,7 +76,7 @@ function main() {
 
   // Here's where we call the routine that builds all the
   // objects we'll be drawing.
-  initBuffers(gl, programInfo);
+  const buffers = initBuffers(gl, programInfo);
 
   let then = 0;
 
@@ -86,7 +86,7 @@ function main() {
     const deltaTime = now - then;
     then = now;
 
-    drawScene(gl, programInfo, deltaTime);
+    drawScene(gl, programInfo, buffers, deltaTime);
 
     requestAnimationFrame(render);
   }
