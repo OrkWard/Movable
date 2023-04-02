@@ -4,24 +4,31 @@ import { initTextures } from "./init-texture.js";
 
 main();
 
+function validateNoneOfTheArgsAreUndefined(functionName, args) {
+  for (var ii = 0; ii < args.length; ++ii) {
+    if (args[ii] === undefined) {
+      console.error(
+        "undefined passed to gl." +
+          functionName +
+          "(" +
+          WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
+          ")"
+      );
+    }
+  }
+}
+
 function main() {
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
-  function validateNoneOfTheArgsAreUndefined(functionName, args) {
-    for (var ii = 0; ii < args.length; ++ii) {
-      if (args[ii] === undefined) {
-        console.error(
-          "undefined passed to gl." +
-            functionName +
-            "(" +
-            WebGLDebugUtils.glFunctionArgsToString(functionName, args) +
-            ")"
-        );
-      }
-    }
-  }
 
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  canvas.width = width * devicePixelRatio;
+  canvas.height = height * devicePixelRatio;
   let gl = canvas.getContext("webgl");
+  gl.viewport(0, 0, canvas.width, canvas.height);
   gl = WebGLDebugUtils.makeDebugContext(
     gl,
     undefined,
@@ -47,10 +54,10 @@ function main() {
   };
   xhr.send();
   xhr = new XMLHttpRequest();
-  xhr.open('GET', 'cube.frag', false);
+  xhr.open("GET", "cube.frag", false);
   xhr.onreadystatechange = function () {
     fsSource = xhr.responseText;
-  }
+  };
   xhr.send();
 
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
