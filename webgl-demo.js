@@ -29,17 +29,11 @@ function main() {
   canvas.height = height * devicePixelRatio;
   let gl = canvas.getContext("webgl");
   gl.viewport(0, 0, canvas.width, canvas.height);
-  gl = WebGLDebugUtils.makeDebugContext(
-    gl,
-    undefined,
-    validateNoneOfTheArgsAreUndefined
-  );
+  gl = WebGLDebugUtils.makeDebugContext(gl, undefined, validateNoneOfTheArgsAreUndefined);
 
   // Only continue if WebGL is available and working
   if (gl === null) {
-    alert(
-      "Unable to initialize WebGL. Your browser or machine may not support it."
-    );
+    alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
 
@@ -65,20 +59,18 @@ function main() {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
-      texCoord: gl.getAttribLocation(shaderProgram, "aTexCoord"),
+      vertexNormal: gl.getAttribLocation(shaderProgram, "aVertexNormal"),
+      textureCoord: gl.getAttribLocation(shaderProgram, "aTextureCoord"),
     },
     uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(
-        shaderProgram,
-        "uProjectionMatrix"
-      ),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
-      tex: gl.getUniformLocation(shaderProgram, "tex"),
+      projectionMatrix: gl.getUniformLocation(shaderProgram, "uPMatrix"),
+      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uMVMatrix"),
+      normalMatrix: gl.getUniformLocation(shaderProgram, "uNormalMatrix"),
+      sampler: gl.getUniformLocation(shaderProgram, "uSampler"),
     },
   };
 
-  const buffers = initBuffers(gl, programInfo);
+  const indexBuffer = initBuffers(gl, programInfo);
   const texture = initTextures(gl);
 
   let then = 0;
@@ -89,7 +81,7 @@ function main() {
     const deltaTime = now - then;
     then = now;
 
-    drawScene(gl, programInfo, buffers, texture, deltaTime);
+    drawScene(gl, programInfo, indexBuffer, texture, deltaTime);
 
     requestAnimationFrame(render);
   }
@@ -111,10 +103,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 
   // 如果创建失败，alert
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    alert(
-      "Unable to initialize the shader program: " +
-        gl.getProgramInfoLog(shaderProgram)
-    );
+    alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
     return null;
   }
 
@@ -138,9 +127,7 @@ function loadShader(gl, type, source) {
   // See if it compiled successfully
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(
-      "An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader)
-    );
+    alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
