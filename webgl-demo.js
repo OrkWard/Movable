@@ -1,8 +1,11 @@
 import { initBuffers } from "./init-buffers.js";
 import { drawScene } from "./draw-scene.js";
-import { initTextures } from "./init-texture.js";
+import { initTexture } from "./init-texture.js";
 
 main();
+
+// will set to true when video can be copied to texture
+let copyVideo = false;
 
 function validateNoneOfTheArgsAreUndefined(functionName, args) {
   for (var ii = 0; ii < args.length; ++ii) {
@@ -16,6 +19,58 @@ function validateNoneOfTheArgsAreUndefined(functionName, args) {
       );
     }
   }
+}
+
+function setupVideo(url) {
+  const video = document.createElement("video");
+
+  let playing = false;
+  let timeupdate = false;
+
+  video.playsInline = true;
+  video.muted = true;
+  video.loop = true;
+
+  // Waiting for these 2 events ensures
+  // there is data in the video
+
+  video.addEventListener(
+    "playing",
+    () => {
+      playing = true;
+      checkReady();
+    },
+    true
+  );
+
+  video.addEventListener(
+    "timeupdate",
+    () => {
+      timeupdate = true;
+      checkReady();
+    },
+    true
+  );
+
+  video.src = url;
+  video.play();
+
+  function checkReady() {
+    if (playing && timeupdate) {
+      copyVideo = true;
+    }
+  }
+
+  return video;
+}
+
+function updateTexture(gl, texture, video) {
+  const level = 0;
+  const internalFormat = gl.RGBA;
+  const srcFormat = gl.RGBA;
+  const srcType = gl.UNSIGNED_BYTE;
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, video);
 }
 
 function main() {
@@ -71,7 +126,8 @@ function main() {
   };
 
   const indexBuffer = initBuffers(gl, programInfo);
-  const texture = initTextures(gl);
+  const texture = initTexture(gl);
+  const video = setupVideo("Firefox.mp4");
 
   let then = 0;
 
@@ -80,6 +136,9 @@ function main() {
     now *= 0.001; // convert to seconds
     const deltaTime = now - then;
     then = now;
+
+    if (copyVideo)
+      updateTexture(gl, texture, video);
 
     drawScene(gl, programInfo, indexBuffer, texture, deltaTime);
 
